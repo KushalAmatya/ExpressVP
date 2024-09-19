@@ -21,9 +21,29 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
 
 // src/index.ts
-var import_express2 = __toESM(require("express"));
+var import_express3 = __toESM(require("express"));
 var import_dotenv = __toESM(require("dotenv"));
 
 // src/routes/auth.routes.ts
@@ -31,20 +51,73 @@ var import_express = __toESM(require("express"));
 
 // src/controllers/authController.ts
 var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
-var login = (req, res) => {
+
+// src/model/authModel.ts
+var import_mongoose = __toESM(require("mongoose"));
+var UserSchema = new import_mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
+});
+var authUser = import_mongoose.default.model("auth", UserSchema);
+var authModel_default = authUser;
+
+// src/controllers/authController.ts
+var import_bcrypt = __toESM(require("bcrypt"));
+var login = (req, res) => __async(void 0, null, function* () {
   const { email, password } = req.body;
-  const authToken = import_jsonwebtoken.default.sign(
-    { email, password },
-    process.env.SECRET,
-    { expiresIn: "1h" }
-  );
-  console.log(authToken);
-  res.json({ email, password, authToken });
-};
-var register = (req, res) => {
+  try {
+    const existingUser = yield authModel_default.findOne({ email });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User does not exist" });
+    }
+    const passwordCorrect = import_bcrypt.default.compareSync(password, existingUser.password);
+    if (!passwordCorrect) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    const authToken = import_jsonwebtoken.default.sign(
+      { email: existingUser.email, userId: existingUser._id },
+      process.env.SECRET,
+      { expiresIn: "1d" }
+    );
+    console.log(authToken);
+    res.json({ authToken });
+  } catch (err) {
+    res.status(500).json({ message: "Error logging in", error: err });
+  }
+});
+var register = (req, res) => __async(void 0, null, function* () {
   const { name, email, password } = req.body;
-  res.json({ name, email, password });
-};
+  try {
+    const existingUser = yield authModel_default.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    const salt = yield import_bcrypt.default.genSalt(10);
+    const hashedPassword = yield import_bcrypt.default.hash(password, salt);
+    const newUser = new authModel_default({
+      name,
+      email,
+      password: hashedPassword
+    });
+    yield newUser.save();
+    res.status(201).json({ message: "User registered successfully", email });
+  } catch (err) {
+    res.status(500).json({ message: "Error registering user", error: err });
+  }
+});
 
 // src/middleware/validationMiddleware.ts
 var import_zod = require("zod");
@@ -85,17 +158,54 @@ authRouter.post("/login", validateData(authLoginSchema), login);
 authRouter.post("/register", validateData(authRegistrationSchema), register);
 var auth_routes_default = authRouter;
 
+// src/routes/app.routes.ts
+var import_express2 = __toESM(require("express"));
+
+// src/middleware/authValidationMiddleware.ts
+var import_jsonwebtoken2 = __toESM(require("jsonwebtoken"));
+var SECRET_KEY = process.env.SECRET;
+console.log("env token", SECRET_KEY, process.env.SECRET);
+var isAuth = (req, res, next) => __async(void 0, null, function* () {
+  var _a;
+  try {
+    console.log("req.headers", req.header);
+    const token = (_a = req.header("Authorization")) == null ? void 0 : _a.slice(7);
+    console.log("header token", token);
+    console.log("env token", SECRET_KEY, process.env.SECRET);
+    if (!token) {
+      throw new Error();
+    }
+    const decoded = import_jsonwebtoken2.default.verify(token, SECRET_KEY);
+    req.token = decoded;
+    next();
+  } catch (err) {
+    res.status(401).send("Please authenticate");
+  }
+});
+
+// src/routes/app.routes.ts
+var appRouter = import_express2.default.Router();
+appRouter.get("/", isAuth, (req, res) => {
+  res.send("Hello World");
+});
+var app_routes_default = appRouter;
+
 // src/index.ts
 var import_cors = __toESM(require("cors"));
 var import_helmet = __toESM(require("helmet"));
+var import_mongoose2 = __toESM(require("mongoose"));
 import_dotenv.default.config();
-var app = (0, import_express2.default)();
+var app = (0, import_express3.default)();
 var PORT = process.env.PORT || 5e3;
 app.use((0, import_cors.default)());
 app.use((0, import_helmet.default)());
-app.use(import_express2.default.json());
+app.use(import_express3.default.json());
 app.use("/auth", auth_routes_default);
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.use("/", app_routes_default);
+import_mongoose2.default.connect(process.env.DB).then(() => {
+  console.log("Connected to the database");
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
 });
 //# sourceMappingURL=index.js.map
