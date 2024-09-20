@@ -7,6 +7,7 @@ import {
   formUpload,
   getTodos,
   updateTodo,
+  getFormdata,
 } from "../controllers/appController";
 import { appSchema } from "../schemas/appSchema";
 import { validateData } from "../middleware/validationMiddleware";
@@ -23,4 +24,5 @@ appRouter.post(
   validateData(appSchema),
   formUpload
 );
+appRouter.get("/getformdata", isAuth, getFormdata);
 export default appRouter;

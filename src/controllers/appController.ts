@@ -55,4 +55,8 @@ const formUpload = async (req: Request, res: Response) => {
   }
 };
 
-export { addTodo, getTodos, deleteTodo, updateTodo, formUpload };
+const getFormdata = async (req: Request, res: Response) => {
+  const data = await formUploadModel.find({});
+  res.json(data);
+};
+export { addTodo, getTodos, deleteTodo, updateTodo, formUpload, getFormdata };

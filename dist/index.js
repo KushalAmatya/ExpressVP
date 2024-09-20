@@ -272,6 +272,10 @@ var formUpload = (req, res) => __async(void 0, null, function* () {
     return res.json({ message: "Data saved successfully", personal, address });
   }
 });
+var getFormdata = (req, res) => __async(void 0, null, function* () {
+  const data = yield formUploadModel.find({});
+  res.json(data);
+});
 
 // src/schemas/appSchema.ts
 var import_zod3 = __toESM(require("zod"));
@@ -299,6 +303,7 @@ appRouter.post(
   validateData(appSchema),
   formUpload
 );
+appRouter.get("/getformdata", isAuth, getFormdata);
 var app_routes_default = appRouter;
 
 // src/index.ts
