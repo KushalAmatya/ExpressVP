@@ -175,7 +175,7 @@ var isAuth = (req, res, next) => __async(void 0, null, function* () {
     if (!token) {
       throw new Error();
     }
-    const decoded = import_jsonwebtoken2.default.verify(token, SECRET_KEY);
+    const decoded = import_jsonwebtoken2.default.verify(token, process.env.SECRET);
     req.token = decoded;
     next();
   } catch (err) {
@@ -183,17 +183,46 @@ var isAuth = (req, res, next) => __async(void 0, null, function* () {
   }
 });
 
+// src/model/appModel.ts
+var import_mongoose2 = __toESM(require("mongoose"));
+var AppSchema = new import_mongoose2.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  }
+});
+var appModel = import_mongoose2.default.model("app", AppSchema);
+
+// src/controllers/appController.ts
+var addTodo = (req, res) => __async(void 0, null, function* () {
+  const dataModel = new appModel({
+    title: req.body.title,
+    description: req.body.description
+  });
+  yield dataModel.save();
+  res.json({ message: "Todo added successfully" });
+});
+var getTodos = (req, res) => __async(void 0, null, function* () {
+  const todos = yield appModel.find({});
+  res.json(todos);
+});
+
 // src/routes/app.routes.ts
 var appRouter = import_express2.default.Router();
-appRouter.get("/", isAuth, (req, res) => {
-  res.send("Hello World");
-});
+appRouter.post("/add", isAuth, addTodo);
+appRouter.get("/todos", isAuth, getTodos);
 var app_routes_default = appRouter;
 
 // src/index.ts
 var import_cors = __toESM(require("cors"));
 var import_helmet = __toESM(require("helmet"));
-var import_mongoose2 = __toESM(require("mongoose"));
+var import_mongoose3 = __toESM(require("mongoose"));
 import_dotenv.default.config();
 var app = (0, import_express3.default)();
 var PORT = process.env.PORT || 5e3;
@@ -202,7 +231,7 @@ app.use((0, import_helmet.default)());
 app.use(import_express3.default.json());
 app.use("/auth", auth_routes_default);
 app.use("/", app_routes_default);
-import_mongoose2.default.connect(process.env.DB).then(() => {
+import_mongoose3.default.connect(process.env.DB).then(() => {
   console.log("Connected to the database");
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

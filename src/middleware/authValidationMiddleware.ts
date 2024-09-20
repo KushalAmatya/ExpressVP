@@ -1,8 +1,7 @@
-// import { SECRET_KEY } from "./authValidationMiddleware";
 import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
-export const SECRET_KEY: Secret = process.env.SECRET as Secret;
+const SECRET_KEY: Secret = process.env.SECRET as Secret;
 
 console.log("env token", SECRET_KEY, process.env.SECRET);
 export interface CustomRequest extends Request {
@@ -24,7 +23,7 @@ export const isAuth = async (
     if (!token) {
       throw new Error();
     }
-    const decoded = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.SECRET as Secret);
     (req as CustomRequest).token = decoded;
 
     next();
