@@ -51,6 +51,7 @@ const formUpload = async (req: Request, res: Response) => {
   if (!isSaved) {
     return res.status(400).json({ message: "Data not saved" });
   } else {
+    console.log("Data saved successfully");
     return res.json({ message: "Data saved successfully", personal, address });
   }
 };
