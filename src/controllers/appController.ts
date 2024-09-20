@@ -47,6 +47,7 @@ const formUpload = async (req: Request, res: Response) => {
     personal: req.body.personal,
     address: req.body.address,
   });
+  //
   const isSaved = await dataModel.save();
   if (!isSaved) {
     return res.status(400).json({ message: "Data not saved" });
