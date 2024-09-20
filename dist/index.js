@@ -200,6 +200,29 @@ var AppSchema = new import_mongoose2.Schema({
     trim: true
   }
 });
+var formUploadSchema = new import_mongoose2.Schema({
+  personal: {
+    name: {
+      type: String,
+      required: true
+    },
+    age: {
+      type: Number,
+      required: true
+    }
+  },
+  address: {
+    street: {
+      type: String,
+      required: true
+    },
+    city: {
+      type: String,
+      required: true
+    }
+  }
+});
+var formUploadModel = import_mongoose2.default.model("formUpload", formUploadSchema);
 var appModel = import_mongoose2.default.model("app", AppSchema);
 
 // src/controllers/appController.ts
@@ -232,6 +255,36 @@ var updateTodo = (req, res) => __async(void 0, null, function* () {
   });
   res.json({ message: "Todo updated successfully" });
 });
+var formUpload = (req, res) => __async(void 0, null, function* () {
+  const { personal, address } = req.body;
+  const { name, age } = personal;
+  const { street, city } = address;
+  console.log(`Name: ${name}, Age: ${age}`);
+  console.log(`Street: ${street}, City: ${city}`);
+  const dataModel = new formUploadModel({
+    personal: req.body.personal,
+    address: req.body.address
+  });
+  const isSaved = yield dataModel.save();
+  if (!isSaved) {
+    return res.status(400).json({ message: "Data not saved" });
+  } else {
+    return res.json({ message: "Data saved successfully", personal, address });
+  }
+});
+
+// src/schemas/appSchema.ts
+var import_zod3 = __toESM(require("zod"));
+var appSchema = import_zod3.default.object({
+  personal: import_zod3.default.object({
+    name: import_zod3.default.string(),
+    age: import_zod3.default.number()
+  }),
+  address: import_zod3.default.object({
+    street: import_zod3.default.string(),
+    city: import_zod3.default.string()
+  })
+});
 
 // src/routes/app.routes.ts
 var appRouter = import_express2.default.Router();
@@ -240,6 +293,12 @@ appRouter.post("/add", upload.single("image"), isAuth, addTodo);
 appRouter.get("/todos", isAuth, getTodos);
 appRouter.delete("/delete/:id", isAuth, deleteTodo);
 appRouter.put("/update", isAuth, updateTodo);
+appRouter.post(
+  "/formdata",
+  upload.single("image"),
+  validateData(appSchema),
+  formUpload
+);
 var app_routes_default = appRouter;
 
 // src/index.ts
