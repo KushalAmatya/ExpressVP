@@ -18,4 +18,28 @@ const AppSchema: Schema = new Schema({
   },
 });
 
+const formUploadSchema: Schema = new Schema({
+  personal: {
+    name: {
+      type: String,
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+  },
+  address: {
+    street: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+  },
+});
+
+export const formUploadModel = mongoose.model("formUpload", formUploadSchema);
 export const appModel = mongoose.model<IApp>("app", AppSchema);
