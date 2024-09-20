@@ -183,6 +183,9 @@ var isAuth = (req, res, next) => __async(void 0, null, function* () {
   }
 });
 
+// src/routes/app.routes.ts
+var import_multer = __toESM(require("multer"));
+
 // src/model/appModel.ts
 var import_mongoose2 = __toESM(require("mongoose"));
 var AppSchema = new import_mongoose2.Schema({
@@ -212,11 +215,31 @@ var getTodos = (req, res) => __async(void 0, null, function* () {
   const todos = yield appModel.find({});
   res.json(todos);
 });
+var deleteTodo = (req, res) => __async(void 0, null, function* () {
+  yield appModel.findByIdAndDelete(req.params.id);
+  res.json({ message: "Todo deleted successfully" });
+});
+var updateTodo = (req, res) => __async(void 0, null, function* () {
+  if (!req.body.title || !req.body.description) {
+    return res.status(400).json({ message: "Please provide all details" });
+  }
+  if (!req.query.id) {
+    return res.status(400).json({ message: "Please provide id" });
+  }
+  yield appModel.findByIdAndUpdate(req.query.id, {
+    title: req.body.title,
+    description: req.body.description
+  });
+  res.json({ message: "Todo updated successfully" });
+});
 
 // src/routes/app.routes.ts
 var appRouter = import_express2.default.Router();
-appRouter.post("/add", isAuth, addTodo);
+var upload = (0, import_multer.default)({ dest: "uploads/" });
+appRouter.post("/add", upload.single("image"), isAuth, addTodo);
 appRouter.get("/todos", isAuth, getTodos);
+appRouter.delete("/delete/:id", isAuth, deleteTodo);
+appRouter.put("/update", isAuth, updateTodo);
 var app_routes_default = appRouter;
 
 // src/index.ts
