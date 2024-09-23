@@ -21,6 +21,7 @@ const login = async (req: Request, res: Response) => {
       process.env.SECRET as string,
       { expiresIn: "1d" }
     );
+
     console.log(authToken);
 
     res.json({ authToken });

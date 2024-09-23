@@ -1,16 +1,24 @@
 import { Request, Response } from "express";
 import { appModel, formUploadModel } from "../model/appModel";
+import { CustomRequest } from "../middleware/authValidationMiddleware";
+import { JwtPayload } from "jsonwebtoken";
 const addTodo = async (req: Request, res: Response) => {
+  const userId = (req as CustomRequest).token.userId;
+
   const dataModel = new appModel({
+    userId,
     title: req.body.title,
     description: req.body.description,
   });
+
   await dataModel.save();
   res.json({ message: "Todo added successfully" });
 };
 
 const getTodos = async (req: Request, res: Response) => {
-  const todos = await appModel.find({});
+  const userId = (req as CustomRequest).token.userId;
+  const todos = await appModel.find({ userId });
+
   res.json(todos);
 };
 
@@ -47,7 +55,7 @@ const formUpload = async (req: Request, res: Response) => {
     personal: req.body.personal,
     address: req.body.address,
   });
-  //
+
   const isSaved = await dataModel.save();
   if (!isSaved) {
     return res.status(400).json({ message: "Data not saved" });
@@ -57,4 +65,9 @@ const formUpload = async (req: Request, res: Response) => {
   }
 };
 
-export { addTodo, getTodos, deleteTodo, updateTodo, formUpload };
+const getFormData = async (req: Request, res: Response) => {
+  const formData = await formUploadModel.find({});
+  res.json(formData);
+};
+
+export { addTodo, getTodos, deleteTodo, updateTodo, formUpload, getFormData };

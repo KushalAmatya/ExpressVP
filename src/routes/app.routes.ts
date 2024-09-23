@@ -5,6 +5,7 @@ import {
   addTodo,
   deleteTodo,
   formUpload,
+  getFormData,
   getTodos,
   updateTodo,
 } from "../controllers/appController";
@@ -23,4 +24,5 @@ appRouter.post(
   validateData(appSchema),
   formUpload
 );
+appRouter.get("/getformdata", isAuth, getFormData);
 export default appRouter;

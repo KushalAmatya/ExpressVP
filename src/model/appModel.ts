@@ -6,15 +6,18 @@ interface IApp extends Document {
 }
 
 const AppSchema: Schema = new Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "auth", // Reference the user model
+    required: true,
+  },
   title: {
     type: String,
     required: true,
-    trim: true,
   },
   description: {
     type: String,
     required: true,
-    trim: true,
   },
 });
 
