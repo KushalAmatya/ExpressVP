@@ -1,9 +1,6 @@
 import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
-const SECRET_KEY: Secret = process.env.SECRET as Secret;
-
-console.log("env token", SECRET_KEY, process.env.SECRET);
 export interface CustomRequest extends Request {
   token: JwtPayload;
 }

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { appModel, formUploadModel } from "../model/appModel";
 import { CustomRequest } from "../middleware/authValidationMiddleware";
-import { JwtPayload } from "jsonwebtoken";
 const addTodo = async (req: Request, res: Response) => {
   const userId = (req as CustomRequest).token.userId;
 
@@ -44,15 +43,22 @@ const updateTodo = async (req: Request, res: Response) => {
 };
 
 const formUpload = async (req: Request, res: Response) => {
+  console.log("inside");
+
   const { personal, address } = req.body;
+
+  console.log(req);
 
   const { name, age } = personal;
   const { street, city } = address;
-
   console.log(`Name: ${name}, Age: ${age}`);
   console.log(`Street: ${street}, City: ${city}`);
   const dataModel = new formUploadModel({
-    personal: req.body.personal,
+    personal: {
+      name,
+      age,
+      photo: req.file?.path,
+    },
     address: req.body.address,
   });
 

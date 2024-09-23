@@ -8,7 +8,7 @@ interface IApp extends Document {
 const AppSchema: Schema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "auth", // Reference the user model
+    ref: "auth",
     required: true,
   },
   title: {
@@ -30,6 +30,10 @@ const formUploadSchema: Schema = new Schema({
     age: {
       type: Number,
       required: true,
+    },
+    photo: {
+      type: String,
+      required: false,
     },
   },
   address: {

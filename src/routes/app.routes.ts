@@ -13,7 +13,18 @@ import { appSchema } from "../schemas/appSchema";
 import { validateData } from "../middleware/validationMiddleware";
 
 const appRouter = express.Router();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Please upload an image"));
+    }
+    cb(null, true);
+  },
+  limits: {
+    fileSize: 1000000,
+  },
+});
 appRouter.post("/add", upload.single("image"), isAuth, addTodo);
 appRouter.get("/todos", isAuth, getTodos);
 appRouter.delete("/delete/:id", isAuth, deleteTodo);
